@@ -3,11 +3,16 @@ set(EXTERNAL_C_SRCS
 )
 
 idf_component_register(
-    PRIV_REQUIRES 
+    PRIV_REQUIRES
         bt
+        esp_driver_dac
+        nvs_flash
+        esp_ringbuf
     SRCS
         "main.cpp"
-        "dac_audio.cpp"
+        "dac/dac_audio.cpp"
+        "bluetooth/bluetooth.cpp"
+        "controls/controls.cpp"
         ${EXTERNAL_C_SRCS}
     INCLUDE_DIRS
         "."
