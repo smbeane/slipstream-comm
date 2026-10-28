@@ -1,11 +1,14 @@
 #include "controls.hpp"
 
 #include <esp_log.h>
-#include "bluetooth/bluetooth.hpp"
+#include "bluetooth/a2dp.hpp"
 
 namespace bluetooth {
+
     extern esp_err_t send_avrc_passthrough_cmd(uint8_t cmd, bool is_pressed);
+
 }
+
 extern void play_chime(const char* sound_name);
 
 namespace controls {
@@ -38,29 +41,29 @@ namespace controls {
             if (xQueueReceive(button_evt_queue, &io_num, portMAX_DELAY)) {
                 vTaskDelay(pdMS_TO_TICKS(50));
                 if (io_num == BTN_PAUSE) {
-                    if (bluetooth::is_currently_playing) {
+                    if (a2dp::is_currently_playing) {
                         ESP_LOGI(TAG, "Pausing!!!");
-                        bluetooth::send_avrc_passthrough_cmd(ESP_AVRC_PT_CMD_PAUSE, 0);
+                        a2dp::send_avrc_passthrough_cmd(ESP_AVRC_PT_CMD_PAUSE, 0);
                         vTaskDelay(pdMS_TO_TICKS(50));
-                        bluetooth::send_avrc_passthrough_cmd(ESP_AVRC_PT_CMD_PAUSE, 1);
+                        a2dp::send_avrc_passthrough_cmd(ESP_AVRC_PT_CMD_PAUSE, 1);
 
                     } else {
                         ESP_LOGI(TAG, "Playing!!!");
-                        bluetooth::send_avrc_passthrough_cmd(ESP_AVRC_PT_CMD_PLAY, 0);
+                        a2dp::send_avrc_passthrough_cmd(ESP_AVRC_PT_CMD_PLAY, 0);
                         vTaskDelay(pdMS_TO_TICKS(50));
-                        bluetooth::send_avrc_passthrough_cmd(ESP_AVRC_PT_CMD_PLAY, 1);
+                        a2dp::send_avrc_passthrough_cmd(ESP_AVRC_PT_CMD_PLAY, 1);
                         
                     }
                 } else if (io_num == BTN_SKIP) {
                     ESP_LOGI(TAG, "Skipping!!!");
-                    bluetooth::send_avrc_passthrough_cmd(ESP_AVRC_PT_CMD_FORWARD, 0);
+                    a2dp::send_avrc_passthrough_cmd(ESP_AVRC_PT_CMD_FORWARD, 0);
                     vTaskDelay(pdMS_TO_TICKS(50));
-                    bluetooth::send_avrc_passthrough_cmd(ESP_AVRC_PT_CMD_FORWARD, 1);
+                    a2dp::send_avrc_passthrough_cmd(ESP_AVRC_PT_CMD_FORWARD, 1);
                 } else if (io_num == BTN_PREV) {
                     ESP_LOGI(TAG, "Previous!!!");
-                    bluetooth::send_avrc_passthrough_cmd(ESP_AVRC_PT_CMD_BACKWARD, 0);
+                    a2dp::send_avrc_passthrough_cmd(ESP_AVRC_PT_CMD_BACKWARD, 0);
                     vTaskDelay(pdMS_TO_TICKS(50));
-                    bluetooth::send_avrc_passthrough_cmd(ESP_AVRC_PT_CMD_BACKWARD, 1);
+                    a2dp::send_avrc_passthrough_cmd(ESP_AVRC_PT_CMD_BACKWARD, 1);
                 }
             }
         }

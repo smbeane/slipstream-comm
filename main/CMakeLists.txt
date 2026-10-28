@@ -12,6 +12,8 @@ idf_component_register(
         "main.cpp"
         "dac/dac_audio.cpp"
         "bluetooth/bluetooth.cpp"
+        "bluetooth/a2dp.cpp"
+        "bluetooth/hfp.cpp"
         "controls/controls.cpp"
         ${EXTERNAL_C_SRCS}
     INCLUDE_DIRS

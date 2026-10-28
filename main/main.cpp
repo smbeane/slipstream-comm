@@ -96,7 +96,7 @@ void audio_playback_task(void *pvParameters)
 }
 
 // Add this inside the anonymous namespace in main.cpp
-void test_dac_output(void)
+void test_dac_output()
 {
     ESP_LOGI(TAG, "Starting standalone 441Hz DAC tone test...");
 
@@ -170,7 +170,7 @@ void play_chime(const char* sound_name)
     }
 }
 
-extern "C" void app_main(void)
+extern "C" void app_main()
 {
     s_ringbuf = xRingbufferCreate(16384, RINGBUF_TYPE_NOSPLIT);
     if (s_ringbuf == nullptr) {

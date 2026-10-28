@@ -11,7 +11,7 @@ dac_continuous_handle_t s_dac_handle = nullptr;
 
 } // namespace
 
-esp_err_t configure_dac(void)
+esp_err_t configure_dac()
 {
     if (s_dac_handle != nullptr) {
         return ESP_OK;
@@ -41,7 +41,7 @@ esp_err_t configure_dac(void)
     return ESP_OK;
 }
 
-esp_err_t enable_dac_audio(void)
+esp_err_t enable_dac_audio()
 {
     if (s_dac_handle == nullptr) {
         return ESP_ERR_INVALID_STATE;
@@ -59,7 +59,7 @@ esp_err_t enable_dac_audio(void)
     return ESP_OK;
 }
 
-esp_err_t disable_dac_audio(void)
+esp_err_t disable_dac_audio()
 {
     if (s_dac_handle == nullptr) {
         return ESP_ERR_INVALID_STATE;
