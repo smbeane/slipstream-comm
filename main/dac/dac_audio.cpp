@@ -3,6 +3,9 @@
 #include <esp_log.h>
 #include "driver/dac_continuous.h"
 
+
+extern bool use_a2dp;
+
 namespace {
 
 constexpr const char *TAG = "dac_audio";
@@ -17,12 +20,15 @@ esp_err_t configure_dac()
         return ESP_OK;
     }
 
+    uint32_t target_freq = use_a2dp ? 44100 : 32000;
+
     // configure dac to output with basic config
     dac_continuous_config_t config = {
         .chan_mask = DAC_CHANNEL_MASK_CH0,
         .desc_num = 8,
         .buf_size = 512,
-        .freq_hz = 44100,
+        .freq_hz = target_freq,
+        // .freq_hz = 32000,
         .offset = 0,
         .clk_src = DAC_DIGI_CLK_SRC_DEFAULT,
         .chan_mode = DAC_CHANNEL_MODE_SIMUL,

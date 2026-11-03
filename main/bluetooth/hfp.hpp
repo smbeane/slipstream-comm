@@ -5,12 +5,13 @@
 
 #include <freertos/FreeRTOS.h>
 #include <freertos/queue.h>
+#include <esp_hf_defs.h>
 
 #include <esp_err.h>
 
 namespace hfp {
 
-    void init ();
-    void start ();
-
+    void init();
+    void start();
+    void stop();
 }

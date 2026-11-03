@@ -14,8 +14,9 @@ namespace a2dp{
     extern bool is_currently_playing;
 
     esp_err_t send_avrc_passthrough_cmd(uint8_t cmd, bool is_pressed);
-    void init(void);
-    void start(void);
+    void init();
+    void start();
+    void stop();
 
     static QueueHandle_t avrcp_queue = NULL;
     static uint8_t tl = 0;
