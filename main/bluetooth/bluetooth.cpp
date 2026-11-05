@@ -9,23 +9,18 @@
 #include <esp_log.h>
 #include <nvs_flash.h>
 
-bool use_a2dp = false;
-bool use_hfp = true;
+bool use_a2dp = true;
+bool use_hfp = false;
+uint32_t input_freq = 48000;
+
+extern void play_chime(const char* sound_name);
 
 namespace {
-
-constexpr const char *TAG = "bluetooth";
-
-// void on_hf_client_event(esp_hf_client_cb_event_t event, esp_hf_client_cb_param_t *param) {
-    //     if (event <= ESP_HF_CLIENT_PROF_STATE_EVT) {
-        //         ESP_LOGI(TAG, "APP HFP event: %s", c_hf_evt_str[event]);
-        //     } else {
-            //         ESP_LOGI(TAG, "APP HFP invalid event %d", event);
-            //     }
-            // }
-            
+    
+    constexpr const char *TAG = "bluetooth";
+    
 } // namespace
-        
+
 namespace bluetooth {
     
     AudioDataCallback bt_audio_data_callback = nullptr;
@@ -53,12 +48,35 @@ namespace bluetooth {
         return ESP_OK;
     }
 
+    void gap_event_callback(esp_bt_gap_cb_event_t event, esp_bt_gap_cb_param_t *param) {
+        switch (event) {
+            case ESP_BT_GAP_ACL_CONN_CMPL_STAT_EVT:
+                // Check if the connection was successful (status == 0)
+                if (param->acl_conn_cmpl_stat.stat == ESP_BT_STATUS_SUCCESS) {
+                    ESP_LOGI(TAG, "Physical ACL Link Connected!");
+                    play_chime("connect");
+                } else {
+                    ESP_LOGW(TAG, "ACL Connection Failed, status: %d", param->acl_conn_cmpl_stat.stat);
+                }
+                break;
+
+            case ESP_BT_GAP_ACL_DISCONN_CMPL_STAT_EVT:
+                // Check if the disconnection was successful
+                ESP_LOGI(TAG, "Disconnecting");
+                play_chime("disconnect");
+                break;
+            default: {
+                break;
+            }
+        }
+    }
+
     esp_err_t start() {
     
         // initialize GAP device
         ESP_ERROR_CHECK(esp_bt_gap_set_device_name("Slipstream"));
-        // should initialized a esp_bt_gap_register_callback which
-        // is where the connect/disconnect audio should be played from
+        ESP_ERROR_CHECK(esp_bt_gap_register_callback(gap_event_callback));
+
 
         if (use_a2dp) a2dp::start();
         if (use_hfp) hfp::start();

@@ -6,6 +6,7 @@
 #include <esp_hf_client_api.h>
 
 esp_bd_addr_t peer_addr{0};
+extern uint32_t input_freq;
 
 namespace {
     
@@ -160,8 +161,14 @@ namespace hfp {
 
     bool hf_client_connected = false;
 
-    void hfp_callback(esp_hf_client_cb_event_t event, esp_hf_client_cb_param_t *param) {
+    void hfp_event_callback(esp_hf_client_cb_event_t event, esp_hf_client_cb_param_t *param) {
         ESP_LOGI(TAG, "HFP_CALLBACK");
+        
+        if (param->audio_stat.state == ESP_HF_CLIENT_AUDIO_STATE_CONNECTED) {
+            input_freq = 8000;
+        } else if (param->audio_stat.state == ESP_HF_CLIENT_AUDIO_STATE_CONNECTED_MSBC) {
+            input_freq = 16000;
+        }
         
         switch (event) {
         case ESP_HF_CLIENT_CONNECTION_STATE_EVT:
@@ -179,7 +186,7 @@ namespace hfp {
                 hf_client_connected = false;
             }
             break;
-        }
+            }
 
         case ESP_HF_CLIENT_AUDIO_STATE_EVT:
         {
@@ -356,7 +363,7 @@ namespace hfp {
         esp_hf_client_audio_buff_free(audio_buf); 
     }
 
-    void hfp_incoming_data_cb(const uint8_t *buf, uint32_t len) {
+    void hfp_incoming_audio_callback(const uint8_t *buf, uint32_t len) {
         static int log_cnt = 0;
         if (log_cnt++ % 50 == 0) {
             ESP_LOGI("HFP_DEBUG", "INCOMING AUDIO: %d bytes", len);
@@ -368,7 +375,7 @@ namespace hfp {
     }
 
     // 2. Outgoing Audio (ESP32 -> Phone)
-    uint32_t hfp_outgoing_data_cb(uint8_t *buf, uint32_t len) {
+    uint32_t hfp_outgoing_data_callback(uint8_t *buf, uint32_t len) {
         // Satisfy the SCO TX starvation with perfect silence
         memset(buf, 0, len);
         return len; // Tell the stack the buffer is full and ready to send
@@ -381,9 +388,9 @@ namespace hfp {
     void start() {
         ESP_LOGI(TAG, "Starting HFP");
         
-        ESP_ERROR_CHECK(esp_hf_client_register_callback(hfp_callback));
+        ESP_ERROR_CHECK(esp_hf_client_register_callback(hfp_event_callback));
         // ESP_ERROR_CHECK(esp_hf_client_register_audio_data_callback(hfp_audio_data_callback));
-        ESP_ERROR_CHECK(esp_hf_client_register_data_callback(hfp_incoming_data_cb, hfp_outgoing_data_cb));
+        ESP_ERROR_CHECK(esp_hf_client_register_data_callback(hfp_incoming_audio_callback, hfp_outgoing_data_callback));
 
 
         ESP_ERROR_CHECK(esp_hf_client_init());

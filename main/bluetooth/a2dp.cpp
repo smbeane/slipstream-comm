@@ -5,6 +5,8 @@
 #include <esp_avrc_api.h>
 #include <esp_log.h>
 
+extern uint32_t input_freq;
+
 extern void play_chime(const char* sound_name);
 
 namespace {
@@ -17,23 +19,9 @@ namespace a2dp {
 
     bool is_currently_playing = false;
 
-    void on_a2dp_event(esp_a2d_cb_event_t event, esp_a2d_cb_param_t *param) {
+    void a2dp_event_callback(esp_a2d_cb_event_t event, esp_a2d_cb_param_t *param) {
         switch (event) {
-        case ESP_A2D_CONNECTION_STATE_EVT:
-            switch (param->conn_stat.state) {
-                case ESP_A2D_CONNECTION_STATE_CONNECTED:
-                    ESP_LOGI(TAG, "A2DP Connected!");
-                    play_chime("connect");
-                    break;
-                case ESP_A2D_CONNECTION_STATE_DISCONNECTED:
-                    ESP_LOGI(TAG, "A2DP Disconnected...");
-                    play_chime("disconnect");
-                    break;
-                default:
-                    break;
-            }
-            break;
-        case ESP_A2D_AUDIO_STATE_EVT:
+        case ESP_A2D_AUDIO_STATE_EVT: {
             ESP_LOGI(TAG, "A2DP audio state: %d", param->audio_stat.state);
             if (param->audio_stat.state == 1) {
                 is_currently_playing = true;
@@ -43,9 +31,34 @@ namespace a2dp {
                 is_currently_playing = false;
             }
             break;
-        case ESP_A2D_AUDIO_CFG_EVT:
+        } case ESP_A2D_AUDIO_CFG_EVT: {
             ESP_LOGI(TAG, "A2DP audio stream configured");
+            esp_a2d_cb_param_t *a2d = (esp_a2d_cb_param_t *)(param);
+
+            if (a2d->audio_cfg.mcc.type == ESP_A2D_MCT_SBC) {
+                uint8_t sbc_samp_freq = a2d->audio_cfg.mcc.cie.sbc_info.samp_freq;
+
+                switch (sbc_samp_freq) {
+                    case(ESP_A2D_SBC_CIE_SF_16K):
+                        input_freq = 16000;
+                        break;
+                    case (ESP_A2D_SBC_CIE_SF_32K):
+                        input_freq = 32000;
+                        break;
+                    case (ESP_A2D_SBC_CIE_SF_44K):
+                        input_freq = 44100;
+                        break;
+                    case (ESP_A2D_SBC_CIE_SF_48K):
+                        input_freq = 48000;
+                        break;
+                    default:
+                        break;
+                } 
+
+                ESP_LOGI(TAG, "A2DP stream freq: %d", sbc_samp_freq);
+            }
             break;
+        }
         default:
             break;
         }
@@ -59,7 +72,7 @@ namespace a2dp {
         return esp_avrc_ct_send_passthrough_cmd(tl++, cmd, is_pressed);
     }
 
-    void on_a2dp_audio_data(const uint8_t *pcm, uint32_t pcm_size) {
+    void a2dp_audio_callback(const uint8_t *pcm, uint32_t pcm_size) {
         if (bluetooth::bt_audio_data_callback != nullptr) {
             bluetooth::bt_audio_data_callback(pcm, static_cast<size_t>(pcm_size));
         }
@@ -71,8 +84,8 @@ namespace a2dp {
 
     void start() {
         // set callback for A2DP events
-        ESP_ERROR_CHECK(esp_a2d_register_callback(on_a2dp_event));
-        ESP_ERROR_CHECK(esp_a2d_sink_register_data_callback(on_a2dp_audio_data));
+        ESP_ERROR_CHECK(esp_a2d_register_callback(a2dp_event_callback));
+        ESP_ERROR_CHECK(esp_a2d_sink_register_data_callback(a2dp_audio_callback));
 
         // set callback function for AVRCP events
         esp_avrc_ct_register_callback(on_avrcp_ct);
