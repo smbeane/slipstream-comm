@@ -1,12 +1,17 @@
 #include "hfp.hpp"
 #include "bluetooth.hpp"
+#include "bluetooth/a2dp.hpp"
+
 
 #include <esp_log.h>
 #include <inttypes.h>
 #include <esp_hf_client_api.h>
+#include <esp_avrc_api.h>
+
 
 esp_bd_addr_t peer_addr{0};
 extern uint32_t input_freq;
+extern bool use_a2dp;
 
 namespace {
     
@@ -159,16 +164,10 @@ namespace {
 
 namespace hfp {
 
-    bool hf_client_connected = false;
-
     void hfp_event_callback(esp_hf_client_cb_event_t event, esp_hf_client_cb_param_t *param) {
         ESP_LOGI(TAG, "HFP_CALLBACK");
         
-        if (param->audio_stat.state == ESP_HF_CLIENT_AUDIO_STATE_CONNECTED) {
-            input_freq = 8000;
-        } else if (param->audio_stat.state == ESP_HF_CLIENT_AUDIO_STATE_CONNECTED_MSBC) {
-            input_freq = 16000;
-        }
+        
         
         switch (event) {
         case ESP_HF_CLIENT_CONNECTION_STATE_EVT:
@@ -181,15 +180,40 @@ namespace hfp {
             if (param->conn_stat.state == ESP_HF_CLIENT_CONNECTION_STATE_SLC_CONNECTED) {
                 
             } else if (param->conn_stat.state == ESP_HF_CLIENT_CONNECTION_STATE_CONNECTED) {
-                hf_client_connected = true;
+                a2dp::send_avrc_passthrough_cmd(ESP_AVRC_PT_CMD_PAUSE, 0);
+                vTaskDelay(pdMS_TO_TICKS(50));
+                a2dp::send_avrc_passthrough_cmd(ESP_AVRC_PT_CMD_PAUSE, 1);
+                
+                use_a2dp = false;
             } else if (param->conn_stat.state == ESP_HF_CLIENT_CONNECTION_STATE_DISCONNECTED) {
-                hf_client_connected = false;
+                
             }
             break;
             }
 
         case ESP_HF_CLIENT_AUDIO_STATE_EVT:
         {
+            if (param->audio_stat.state == ESP_HF_CLIENT_AUDIO_STATE_CONNECTED) {
+                a2dp::send_avrc_passthrough_cmd(ESP_AVRC_PT_CMD_PAUSE, 0);
+                vTaskDelay(pdMS_TO_TICKS(50));
+                a2dp::send_avrc_passthrough_cmd(ESP_AVRC_PT_CMD_PAUSE, 1);
+                
+                input_freq = 8000;
+                use_a2dp = false;
+                
+            } else if (param->audio_stat.state == ESP_HF_CLIENT_AUDIO_STATE_CONNECTED_MSBC) {
+                a2dp::send_avrc_passthrough_cmd(ESP_AVRC_PT_CMD_PAUSE, 0);
+                vTaskDelay(pdMS_TO_TICKS(50));
+                a2dp::send_avrc_passthrough_cmd(ESP_AVRC_PT_CMD_PAUSE, 1);
+                    
+                input_freq = 16000;
+                use_a2dp = false;
+            } else if (param->audio_stat.state == ESP_HF_CLIENT_AUDIO_STATE_DISCONNECTED) {
+                
+                a2dp::enable_a2dp();
+            }
+
+
             ESP_LOGI(TAG, "--audio state %s",
                     c_audio_state_str[param->audio_stat.state]);
             break;
@@ -348,22 +372,32 @@ namespace hfp {
     }
 
     void hfp_audio_data_callback(esp_hf_sync_conn_hdl_t sync_conn_hdl, esp_hf_audio_buff_t *audio_buf, bool is_bad_frame) {
-        ESP_LOGI("HFP DEBUG", "CALLBACK WORKED! is_bad_frame: %d, size: %d", is_bad_frame, audio_buf->data_len);
-        
-        if (bluetooth::bt_audio_data_callback == nullptr || is_bad_frame) {
-            ESP_LOGE("HFP DEBUG", "bluetooth::bt_audio_data_callback == nullptr??");
+        // If A2DP is active, drop the HFP data and free the buffer immediately
+        if (use_a2dp) {
             esp_hf_client_audio_buff_free(audio_buf);
             return;
         }
 
+        // 1. INCOMING: Route the decoded mSBC/CVSD audio to the DAC ringbuffer
+        if (bluetooth::bt_audio_data_callback != nullptr && !is_bad_frame) {
+            bluetooth::bt_audio_data_callback(audio_buf->data, static_cast<size_t>(audio_buf->data_len));
+        }
 
-        bluetooth::bt_audio_data_callback(audio_buf->data, static_cast<size_t>(audio_buf->data_len));
+        // 2. OUTGOING: Overwrite the processed buffer with zeros for perfect silence
+        memset(audio_buf->data, 0, audio_buf->data_len);
+        
+        // Send the recycled buffer back to the stack using the correct signature
+        esp_err_t err = esp_hf_client_audio_data_send(sync_conn_hdl, audio_buf);
 
-        // FIX: Free the buffer after copying its data to the ringbuffer
-        esp_hf_client_audio_buff_free(audio_buf); 
+        // 3. CLEANUP: Only free the buffer if the stack rejected it (queue full/error)
+        if (err != ESP_OK) {
+            esp_hf_client_audio_buff_free(audio_buf); 
+        }
     }
 
     void hfp_incoming_audio_callback(const uint8_t *buf, uint32_t len) {
+        if (use_a2dp) return;
+
         static int log_cnt = 0;
         if (log_cnt++ % 50 == 0) {
             ESP_LOGI("HFP_DEBUG", "INCOMING AUDIO: %d bytes", len);
@@ -376,6 +410,8 @@ namespace hfp {
 
     // 2. Outgoing Audio (ESP32 -> Phone)
     uint32_t hfp_outgoing_data_callback(uint8_t *buf, uint32_t len) {
+        if (use_a2dp) return 0;
+        
         // Satisfy the SCO TX starvation with perfect silence
         memset(buf, 0, len);
         return len; // Tell the stack the buffer is full and ready to send
@@ -389,8 +425,8 @@ namespace hfp {
         ESP_LOGI(TAG, "Starting HFP");
         
         ESP_ERROR_CHECK(esp_hf_client_register_callback(hfp_event_callback));
-        // ESP_ERROR_CHECK(esp_hf_client_register_audio_data_callback(hfp_audio_data_callback));
-        ESP_ERROR_CHECK(esp_hf_client_register_data_callback(hfp_incoming_audio_callback, hfp_outgoing_data_callback));
+        ESP_ERROR_CHECK(esp_hf_client_register_audio_data_callback(hfp_audio_data_callback));
+        // ESP_ERROR_CHECK(esp_hf_client_register_data_callback(hfp_incoming_audio_callback, hfp_outgoing_data_callback));
 
 
         ESP_ERROR_CHECK(esp_hf_client_init());

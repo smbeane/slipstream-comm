@@ -16,7 +16,6 @@
 
 // Access the configuration flags defined in bluetooth.cpp
 extern bool use_a2dp;
-extern bool use_hfp;
 extern uint32_t input_freq;
 
 namespace {
@@ -29,6 +28,7 @@ RingbufHandle_t s_ringbuf = nullptr;
 
 size_t convert_pcm_to_u8(const uint8_t *pcm, size_t pcm_size, int num_channels)
 {
+    ESP_LOGI(TAG, "Use A2DP: %d, Input Frequency: %d", use_a2dp, input_freq);
     const size_t frame_count = pcm_size / (num_channels * 2); 
     const int16_t *samples = reinterpret_cast<const int16_t *>(pcm);
     static int32_t quant_error = 0;
@@ -156,16 +156,19 @@ void audio_playback_task(void *pvParameters)
     size_t item_size;
     
     // Determine channel count based on active profile for Phase 1 isolation
-    const int num_channels = use_a2dp ? 2 : 1;
-    const size_t bytes_per_frame = num_channels * 2;
-    const size_t upsampling = use_a2dp ? 1 : 4;
-
+    
     while (true) {
+        
+        
         uint8_t *pcm = static_cast<uint8_t *>(
             xRingbufferReceive(s_ringbuf, &item_size, portMAX_DELAY)
         );
-
+        
         if (pcm == nullptr) continue;
+        
+        const int num_channels = use_a2dp ? 2 : 1;
+        const size_t bytes_per_frame = num_channels * 2;
+        const size_t upsampling = use_a2dp ? 1 : 4;
 
         const size_t frame_count = item_size / bytes_per_frame;
         

@@ -17,6 +17,7 @@ namespace a2dp{
     void init();
     void start();
     void stop();
+    void enable_a2dp();
 
     static QueueHandle_t avrcp_queue = NULL;
     static uint8_t tl = 0;

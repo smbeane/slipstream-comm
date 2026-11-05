@@ -9,8 +9,7 @@
 #include <esp_log.h>
 #include <nvs_flash.h>
 
-bool use_a2dp = false;
-bool use_hfp = true;
+bool use_a2dp = true;
 uint32_t input_freq = 48000;
 
 extern void play_chime(const char* sound_name);
@@ -41,8 +40,8 @@ namespace bluetooth {
         ESP_ERROR_CHECK(esp_bluedroid_init_with_cfg(&bluedroid_config));
         ESP_ERROR_CHECK(esp_bluedroid_enable());
         
-        if (use_a2dp) a2dp::init();
-        if (use_hfp) hfp::init();
+        a2dp::init();
+        hfp::init();
 
         ESP_LOGI(TAG, "Bluetooth controller and Bluedroid initialized");
         return ESP_OK;
@@ -77,9 +76,9 @@ namespace bluetooth {
         ESP_ERROR_CHECK(esp_bt_gap_set_device_name("Slipstream"));
         ESP_ERROR_CHECK(esp_bt_gap_register_callback(gap_event_callback));
 
+        a2dp::start();
+        hfp::start();
 
-        if (use_a2dp) a2dp::start();
-        if (use_hfp) hfp::start();
         // set callback function for HFP event
         // esp_hf_client_register_callback()
         
@@ -87,7 +86,6 @@ namespace bluetooth {
         ESP_ERROR_CHECK(esp_bt_gap_set_scan_mode(
             ESP_BT_CONNECTABLE,
             ESP_BT_GENERAL_DISCOVERABLE));
-
 
         // ESP_LOGI(TAG, "A2DP sink started");
         return ESP_OK;
@@ -103,8 +101,8 @@ namespace bluetooth {
     }
 
     esp_err_t stop() {
-        if (use_a2dp) a2dp::stop();
-        if (use_hfp) hfp::stop();
+        a2dp::stop();
+        hfp::stop();
 
         ESP_ERROR_CHECK(esp_bluedroid_disable());
         ESP_LOGI(TAG, "A2DP sink stopped");
