@@ -9,8 +9,8 @@
 #include <esp_log.h>
 #include <nvs_flash.h>
 
-bool use_a2dp = true;
-bool use_hfp = false;
+bool use_a2dp = false;
+bool use_hfp = true;
 uint32_t input_freq = 48000;
 
 extern void play_chime(const char* sound_name);
