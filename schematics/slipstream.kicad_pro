@@ -294,6 +294,7 @@
       "netlist": "",
       "plot": "",
       "specctra_dsn": "",
+      "step": "",
       "vrml": ""
     },
     "page_layout_descr_file": ""
@@ -416,13 +417,21 @@
         "uuid": "bfb0b85c-0da6-45df-947f-3ab41fb4f9da"
       }
     ],
-    "used_designators": "U1-2",
+    "used_designators": "C1-3,R1,#PWR1-8,U1-2",
     "variants": []
   },
   "sheets": [
     [
       "bfb0b85c-0da6-45df-947f-3ab41fb4f9da",
       "Root"
+    ],
+    [
+      "20a629ab-f741-4859-81d9-a655b8b5df3f",
+      "Power"
+    ],
+    [
+      "7dfa8251-5e0f-4253-8fda-0849772d490e",
+      "Audio"
     ]
   ],
   "text_variables": {},
