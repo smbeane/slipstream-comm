@@ -5,6 +5,7 @@
 	(uuid "cc7dae9b-9242-48f5-8041-37082a3ed444")
 	(paper "A4")
 	(lib_symbols
+<<<<<<< HEAD
 		(symbol "Battery_Management:BQ24074RGT"
 			(exclude_from_sim no)
 			(in_bom yes)
@@ -1887,6 +1888,8 @@
 			)
 			(embedded_fonts no)
 		)
+=======
+>>>>>>> 44c47e8eed0736312d1ef64ca2d2f96e77b462bf
 		(symbol "power:+3V3"
 			(power global)
 			(pin_numbers
@@ -2026,6 +2029,7 @@
 			)
 			(embedded_fonts no)
 		)
+<<<<<<< HEAD
 		(symbol "power:GND"
 			(power global)
 			(pin_numbers
@@ -2575,6 +2579,12 @@
 	(symbol
 		(lib_id "power:+3V3")
 		(at 220.98 27.94 0)
+=======
+	)
+	(symbol
+		(lib_id "power:+3V3")
+		(at 102.87 39.37 0)
+>>>>>>> 44c47e8eed0736312d1ef64ca2d2f96e77b462bf
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -2582,9 +2592,16 @@
 		(on_board yes)
 		(in_pos_files yes)
 		(dnp no)
+<<<<<<< HEAD
 		(uuid "1c83cc7e-1b61-4798-8de9-1d199f82bf8f")
 		(property "Reference" "#PWR09"
 			(at 220.98 31.75 0)
+=======
+		(fields_autoplaced yes)
+		(uuid "15a90597-862c-4081-870a-c2234be43600")
+		(property "Reference" "#PWR09"
+			(at 102.87 43.18 0)
+>>>>>>> 44c47e8eed0736312d1ef64ca2d2f96e77b462bf
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -2595,7 +2612,11 @@
 			)
 		)
 		(property "Value" "+3V3"
+<<<<<<< HEAD
 			(at 220.98 24.384 0)
+=======
+			(at 102.87 34.29 0)
+>>>>>>> 44c47e8eed0736312d1ef64ca2d2f96e77b462bf
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -2605,7 +2626,11 @@
 			)
 		)
 		(property "Footprint" ""
+<<<<<<< HEAD
 			(at 220.98 27.94 0)
+=======
+			(at 102.87 39.37 0)
+>>>>>>> 44c47e8eed0736312d1ef64ca2d2f96e77b462bf
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -2616,7 +2641,11 @@
 			)
 		)
 		(property "Datasheet" ""
+<<<<<<< HEAD
 			(at 220.98 27.94 0)
+=======
+			(at 102.87 39.37 0)
+>>>>>>> 44c47e8eed0736312d1ef64ca2d2f96e77b462bf
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -2627,7 +2656,11 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"+3V3\""
+<<<<<<< HEAD
 			(at 220.98 27.94 0)
+=======
+			(at 102.87 39.37 0)
+>>>>>>> 44c47e8eed0736312d1ef64ca2d2f96e77b462bf
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -2638,7 +2671,11 @@
 			)
 		)
 		(pin "1"
+<<<<<<< HEAD
 			(uuid "f83a7c8a-f5e8-4112-b41b-a32d9e7f6f40")
+=======
+			(uuid "7e3ceaef-64a6-4e89-89bb-2e0710dc5056")
+>>>>>>> 44c47e8eed0736312d1ef64ca2d2f96e77b462bf
 		)
 		(instances
 			(project "slipstream"
@@ -2649,6 +2686,7 @@
 			)
 		)
 	)
+<<<<<<< HEAD
 	(symbol
 		(lib_id "Device:R_US")
 		(at 215.9 59.69 0)
@@ -4602,4 +4640,6 @@
 			)
 		)
 	)
+=======
+>>>>>>> 44c47e8eed0736312d1ef64ca2d2f96e77b462bf
 )
