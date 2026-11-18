@@ -2923,6 +2923,16 @@
 	)
 	(wire
 		(pts
+			(xy 149.86 74.93) (xy 154.94 74.93)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "a16430cf-15da-4a19-9660-cf1b2f147cb4")
+	)
+	(wire
+		(pts
 			(xy 167.64 26.67) (xy 167.64 24.13)
 		)
 		(stroke
@@ -3061,6 +3071,30 @@
 		)
 		(uuid "f634850a-4955-44c7-b256-a9f44e9a43de")
 	)
+	(global_label "CHG_N"
+		(shape input)
+		(at 149.86 74.93 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "d41b1a1f-b4dd-4343-be4b-e5e0c39b042d")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 140.7062 74.93 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+	)
 	(symbol
 		(lib_id "Device:C_Small")
 		(at 60.96 26.67 0)
@@ -3095,7 +3129,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 60.96 26.67 0)
 			(hide yes)
 			(show_name no)
@@ -3333,7 +3367,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 71.12 26.67 0)
 			(hide yes)
 			(show_name no)
@@ -3650,7 +3684,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Resistor_SMD:R_0201_0603Metric"
 			(at 26.67 38.1 0)
 			(hide yes)
 			(show_name no)
@@ -4303,7 +4337,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 26.67 46.99 0)
 			(hide yes)
 			(show_name no)
